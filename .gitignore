@@ -1,0 +1,5 @@
+.env
+*.json
+token.json
+go.mod
+go.sum
