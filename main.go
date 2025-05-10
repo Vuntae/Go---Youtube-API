@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"google.golang.org/api/youtube/v3"
 )
@@ -20,10 +23,17 @@ func main() {
 
 	// Pedir nombre para la nueva playlist
 	fmt.Print("Ingresa el nombre de la nueva playlist: ")
-	var name string
-	if _, err := fmt.Scan(&name); err != nil {
+	reader := bufio.NewReader(os.Stdin)
+	_, _ = reader.ReadString('\n') // Descarta todo hasta el próximo salto de línea
+	name, err := reader.ReadString('\n')
+	if err != nil {
 		log.Fatalf("Error leyendo nombre de playlist: %v", err)
 	}
+
+	// Elimina primero el salto de línea y luego los espacios
+	name = strings.TrimRight(name, "\r\n")
+	name = strings.TrimSpace(name)
+
 	if name == "" {
 		log.Fatal("El nombre de la playlist no puede estar vacío.")
 	}
