@@ -13,10 +13,12 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/youtube/v3"
+	// ... imports ...
 )
 
 // tokenCacheFile devuelve la ruta donde guardaremos el token.
 func tokenCacheFile() string {
+	// Obtiene el directorio home del usuario y retorna la ruta del archivo de token.
 	dir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("Imposible leer home dir: %v", err)
@@ -26,6 +28,7 @@ func tokenCacheFile() string {
 
 // saveToken serializa el token a disco.
 func saveToken(path string, token *oauth2.Token) {
+	// Guarda el token OAuth2 en un archivo local.
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatalf("No pude crear el archivo de token: %v", err)
@@ -36,6 +39,7 @@ func saveToken(path string, token *oauth2.Token) {
 
 // tokenFromFile lee y deserializa el token guardado.
 func tokenFromFile(path string) (*oauth2.Token, error) {
+	// Lee el token desde el archivo y lo deserializa.
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -47,10 +51,12 @@ func tokenFromFile(path string) (*oauth2.Token, error) {
 
 // GetClient realiza el flujo OAuth y devuelve un servicio de YouTube autenticado.
 func GetClient(ctx context.Context) *youtube.Service {
+	// Carga las variables de entorno desde .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error cargando .env:", err)
 	}
 
+	// Configura OAuth2 con credenciales y scopes de YouTube.
 	conf := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -62,6 +68,7 @@ func GetClient(ctx context.Context) *youtube.Service {
 	cacheFile := tokenCacheFile()
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil {
+		// Si no hay token, inicia el flujo de autorización OAuth2.
 		codeCh := make(chan string)
 		http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
 			code := r.URL.Query().Get("code")
@@ -86,6 +93,7 @@ func GetClient(ctx context.Context) *youtube.Service {
 		saveToken(cacheFile, tok)
 	}
 
+	// Crea el cliente autenticado y el servicio de YouTube.
 	client := conf.Client(ctx, tok)
 	svc, err := youtube.New(client)
 	if err != nil {
